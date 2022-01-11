@@ -135,7 +135,7 @@ def get_pagerank():
       return jsonify(res)
     for i in wiki_ids:
         try:
-            res.append(my_backend.page_rank.loc[i])
+            res.append(my_backend.page_rank.loc[i]["pageRank"])
         except:
             continue
     return jsonify(res)
@@ -173,4 +173,4 @@ def get_pageview():
 if __name__ == '__main__':
     # run the Flask RESTful API, make the server publicly available (host='0.0.0.0') on port 8080
     my_backend = myBackEnd()
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=False)

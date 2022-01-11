@@ -19,6 +19,7 @@ import math
 from operator import add
 import builtins
 from google.cloud import storage
+import csv
 from collections import defaultdict
 from inverted_index_gcp import *
 import hashlib
@@ -26,6 +27,7 @@ import math
 from itertools import chain
 import time
 from BM25 import BM25_from_index
+from io import BytesIO
 def _hash(s):
     return hashlib.blake2b(bytes(s, encoding='utf8'), digest_size=5).hexdigest()
 
@@ -81,37 +83,18 @@ class myBackEnd():
             if(blob.name == 'postings_gcptitle/id_title_dict.pickle'):
                 with blob.open("rb") as f:
                     self.id_title_dict = pickle.load(f)
-            if(blob.name == 'pr/pr_part-00000-c1f636d8-972a-483c-a516-d1b60f8e868f-c000.csv'):
 
-                content = blob.download_as_string()
-                df = pd.read_csv(BytesIO(content))
-                df.columns = ["id","pageRank"]
-                self.page_rank = df
-
-
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.get_blob('pr/pr_part-00000-c1f636d8-972a-483c-a516-d1b60f8e868f-c000l.csv')
+        content = blob.download_as_string()
+        df = pd.read_csv(BytesIO(content), header = None)
+        df.columns = ['id',"pageRank"]
+        df.set_index('id',inplace=True)
+        self.page_rank = df
         self.index_body.DL = self.DL_body
         self.index_body.vec_len_doc = self.vec_len_doc_body
         self.index_body.term_total = self.term_total_body
         self.index_title.DL = self.DL_title
-
-#############reading and writing funtions ##################
-    # def open_gcp(file_name,dir_name):
-    #     client = storage.Client(file_name)
-    #     bucket = client.bucket(bucket_name)
-    #     blob = bucket.get_blob(f'postings_gcp{dir_name}/' + file_name)
-    #     return blob.open('rb')
-    #
-    # def read_pickle(file_name,dir_name):
-    #     stream = open_gcp(file_name+".pickle",dir_name)
-    #     pick = pickle.load(stream)
-    #     stream.close()
-    #     return pick
-    #
-    # def read_pkl(file_name,dir_name):
-    #     stream = open_gcp(file_name+".pkl",dir_name)
-    #     pick = pickle.load(stream)
-    #     stream.close()
-    #     return pick
 
 ###############start body search###################
 
